@@ -1,0 +1,6 @@
+{
+  "name": "Keyflower Generator",
+  "description": "Generator tajlova i prateći pomoćnik za društvenu igru Keyflower sa pravilima po godišnjim dobima i broju igrača.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
