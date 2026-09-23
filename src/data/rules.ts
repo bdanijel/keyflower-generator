@@ -139,22 +139,35 @@ export const BOAT_ARRIVAL_DATA: Record<string, BoatArrivalGuide> = {
   },
 };
 
-// Fisher-Yates shuffle
-export function shuffleArray<T>(array: T[]): T[] {
+// Mulberry32 seeded pseudo-random number generator
+export function createPRNG(seed: number) {
+  let s = seed >>> 0;
+  return function () {
+    let t = (s += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Seeded Fisher-Yates shuffle
+export function shuffleArray<T>(array: T[], rng: () => number = Math.random): T[] {
   const result = [...array];
   for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
 }
 
-export function generateGameSetup(playerCount: number): GameState {
+export function generateGameSetup(playerCount: number, customSeed?: number): GameState {
   const config = PLAYER_COUNT_CONFIGS[playerCount] || PLAYER_COUNT_CONFIGS[4];
+  const seed = customSeed !== undefined ? customSeed : Math.floor(Math.random() * 900000) + 100000;
+  const rng = createPRNG(seed);
 
   // 1. Home Tiles
   const allHomeTiles = ALL_TILES.filter((t) => t.category === 'home');
-  const shuffledHomeTiles = shuffleArray(allHomeTiles).slice(0, config.homeTiles);
+  const shuffledHomeTiles = shuffleArray(allHomeTiles, rng).slice(0, config.homeTiles);
   // Find minimum number to determine starting player
   let lowestHomeNumber = 999;
   let startingPlayerIndex = 0;
@@ -175,15 +188,15 @@ export function generateGameSetup(playerCount: number): GameState {
 
   // 4. Spring Tiles (Randomly select config.springTiles from 12)
   const allSpringTiles = ALL_TILES.filter((t) => t.category === 'spring');
-  const springTiles = shuffleArray(allSpringTiles).slice(0, config.springTiles);
+  const springTiles = shuffleArray(allSpringTiles, rng).slice(0, config.springTiles);
 
   // 5. Summer Tiles (Randomly select config.summerTiles from 12: 8 regular + 4 summer boats)
   // For summer boats, randomly select side A or side B!
   const allSummerTiles = ALL_TILES.filter((t) => t.category === 'summer');
-  const rawSummerTiles = shuffleArray(allSummerTiles).slice(0, config.summerTiles);
+  const rawSummerTiles = shuffleArray(allSummerTiles, rng).slice(0, config.summerTiles);
   const summerTiles: KeyflowerTile[] = rawSummerTiles.map((tile) => {
     if (tile.isSummerBoat) {
-      const selectedSide: 'A' | 'B' = Math.random() < 0.5 ? 'A' : 'B';
+      const selectedSide: 'A' | 'B' = rng() < 0.5 ? 'A' : 'B';
       return {
         ...tile,
         selectedBoatSide: selectedSide,
@@ -194,12 +207,12 @@ export function generateGameSetup(playerCount: number): GameState {
 
   // 6. Autumn Tiles (Randomly select config.autumnTiles from 12)
   const allAutumnTiles = ALL_TILES.filter((t) => t.category === 'autumn');
-  const autumnTiles = shuffleArray(allAutumnTiles).slice(0, config.autumnTiles);
+  const autumnTiles = shuffleArray(allAutumnTiles, rng).slice(0, config.autumnTiles);
 
   // 7. Winter Tiles (Total 12)
   // Deal config.winterTilesPerPlayer to each player secretly
   const allWinterTiles = ALL_TILES.filter((t) => t.category === 'winter');
-  const shuffledWinterTiles = shuffleArray(allWinterTiles);
+  const shuffledWinterTiles = shuffleArray(allWinterTiles, rng);
 
   const players: PlayerSetup[] = [];
   let winterIndex = 0;
@@ -235,7 +248,7 @@ export function generateGameSetup(playerCount: number): GameState {
     winterTilesPool,
     winterIntroducedTiles: [], // populated when players choose in winter or simulated
     players,
-    seed: Date.now(),
-    generatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    seed,
+    generatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
   };
 }

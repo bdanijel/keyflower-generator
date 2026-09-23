@@ -10,7 +10,9 @@ import {
   Trophy, 
   HelpCircle,
   Sparkles,
-  Compass
+  Compass,
+  Share2,
+  Smartphone
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -21,6 +23,7 @@ interface HeaderProps {
   onToggleLanguage: () => void;
   activeTab: string;
   onTabChange: (tab: string) => void;
+  onOpenSync: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -31,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleLanguage,
   activeTab,
   onTabChange,
+  onOpenSync,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-stone-900/95 backdrop-blur-md border-b border-amber-900/40 shadow-xl text-stone-100">
@@ -92,6 +96,16 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Dices className="w-4 h-4" />
               <span className="hidden sm:inline">{isSerbian ? 'Nova igra' : 'New Game'}</span>
+            </button>
+
+            {/* Sync / Share Button */}
+            <button
+              onClick={onOpenSync}
+              className="px-2.5 sm:px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 active:scale-95 text-amber-400 hover:text-amber-300 font-bold text-xs sm:text-sm border border-stone-700 transition-all flex items-center gap-1.5 shadow-sm"
+              title={isSerbian ? 'Sinhronizacija sa tabletom ili telefonom' : 'Sync with tablet or phone'}
+            >
+              <Share2 className="w-4 h-4 text-amber-400" />
+              <span className="hidden md:inline">{isSerbian ? 'Sinhronizuj / QR' : 'Sync / QR'}</span>
             </button>
 
             {/* Language Switcher */}

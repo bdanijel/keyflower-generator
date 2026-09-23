@@ -10,6 +10,7 @@ import { ScoreCalculator } from './components/ScoreCalculator';
 import { RuleReference } from './components/RuleReference';
 import { TileModal } from './components/TileModal';
 import { SecretWinterModal } from './components/SecretWinterModal';
+import { SyncModal } from './components/SyncModal';
 import { 
   Sparkles, 
   Calendar, 
@@ -18,7 +19,9 @@ import {
   Trophy, 
   HelpCircle,
   Eye,
-  RotateCcw
+  RotateCcw,
+  Share2,
+  Smartphone
 } from 'lucide-react';
 
 export default function App() {
@@ -28,17 +31,42 @@ export default function App() {
   });
 
   const [playerCount, setPlayerCount] = useState<number>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pParam = params.get('p');
+    if (pParam) {
+      const p = parseInt(pParam, 10);
+      if (p >= 2 && p <= 6) return p;
+    }
     const saved = localStorage.getItem('keyflower_players');
     return saved ? parseInt(saved, 10) || 4 : 4;
   });
 
-  const [gameState, setGameState] = useState<GameState>(() =>
-    generateGameSetup(playerCount)
-  );
+  const [gameState, setGameState] = useState<GameState>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const seedParam = params.get('seed');
+    const pParam = params.get('p');
+    const initialPlayers = pParam ? parseInt(pParam, 10) || 4 : 4;
+    if (seedParam) {
+      const seed = parseInt(seedParam, 10);
+      if (!isNaN(seed)) {
+        return generateGameSetup(initialPlayers, seed);
+      }
+    }
+    return generateGameSetup(initialPlayers);
+  });
 
-  const [activeTab, setActiveTab] = useState<string>('setup');
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sParam = params.get('s');
+    if (sParam && ['setup', 'seasons', 'all_in_one', 'compendium', 'score', 'rules'].includes(sParam)) {
+      return sParam;
+    }
+    return 'setup';
+  });
+
   const [selectedModalTile, setSelectedModalTile] = useState<KeyflowerTile | null>(null);
   const [showSecretWinterModal, setShowSecretWinterModal] = useState<boolean>(false);
+  const [showSyncModal, setShowSyncModal] = useState<boolean>(false);
 
   // Sync language to localStorage
   useEffect(() => {
@@ -50,13 +78,32 @@ export default function App() {
     localStorage.setItem('keyflower_players', playerCount.toString());
   }, [playerCount]);
 
+  // Keep URL updated with current seed and player count so refreshing keeps state
+  useEffect(() => {
+    if (gameState.seed) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('seed', gameState.seed.toString());
+      url.searchParams.set('p', gameState.playerCount.toString());
+      url.searchParams.set('s', activeTab);
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [gameState.seed, gameState.playerCount, activeTab]);
+
   const handlePlayerCountChange = (count: number) => {
     setPlayerCount(count);
-    setGameState(generateGameSetup(count));
+    const newGame = generateGameSetup(count);
+    setGameState(newGame);
   };
 
   const handleRegenerate = () => {
-    setGameState(generateGameSetup(playerCount));
+    const newGame = generateGameSetup(playerCount);
+    setGameState(newGame);
+  };
+
+  const handleLoadGameByCode = (seed: number, count: number) => {
+    setPlayerCount(count);
+    const loadedGame = generateGameSetup(count, seed);
+    setGameState(loadedGame);
   };
 
   const toggleLanguage = () => {
@@ -74,6 +121,7 @@ export default function App() {
         onToggleLanguage={toggleLanguage}
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        onOpenSync={() => setShowSyncModal(true)}
       />
 
       {/* Main Content Area */}
@@ -174,7 +222,26 @@ export default function App() {
           <Trophy className="w-4 h-4" />
           <span>{isSerbian ? 'Bodovi' : 'Score'}</span>
         </button>
+
+        <button
+          onClick={() => setShowSyncModal(true)}
+          className="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-[10px] font-bold text-amber-400 hover:text-amber-300"
+        >
+          <Share2 className="w-4 h-4" />
+          <span>{isSerbian ? 'QR Sinhro' : 'Sync'}</span>
+        </button>
       </div>
+
+      {/* Sync / Pairing Modal */}
+      {showSyncModal && (
+        <SyncModal
+          gameState={gameState}
+          activeSeason={activeTab}
+          isSerbian={isSerbian}
+          onClose={() => setShowSyncModal(false)}
+          onLoadGameByCode={handleLoadGameByCode}
+        />
+      )}
 
       {/* Zoomed Tile Modal */}
       {selectedModalTile && (

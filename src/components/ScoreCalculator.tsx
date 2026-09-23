@@ -64,6 +64,37 @@ interface PlayerScoreData {
   unusedGold: number; // 1 pt each
 }
 
+// Touch-friendly stepper for mobile & tablet (no annoying keyboard pops)
+const TouchStepper: React.FC<{
+  value: number;
+  onChange: (val: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+}> = ({ value, onChange, min = 0, max = 999, step = 1 }) => {
+  return (
+    <div className="flex items-center gap-1 bg-stone-100 p-0.5 sm:p-1 rounded-xl border border-stone-300 shrink-0">
+      <button
+        type="button"
+        onClick={() => onChange(Math.max(min, (value || 0) - step))}
+        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white active:bg-stone-200 text-stone-900 font-bold text-base flex items-center justify-center shadow-xs border border-stone-200 touch-manipulation select-none active:scale-90 transition-transform"
+      >
+        -
+      </button>
+      <span className="w-8 sm:w-10 text-center font-mono font-black text-xs sm:text-sm text-stone-900 select-none">
+        {value || 0}
+      </span>
+      <button
+        type="button"
+        onClick={() => onChange(Math.min(max, (value || 0) + step))}
+        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-500 active:bg-amber-600 text-stone-950 font-bold text-base flex items-center justify-center shadow-xs border border-amber-400 touch-manipulation select-none active:scale-90 transition-transform"
+      >
+        +
+      </button>
+    </div>
+  );
+};
+
 export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isSerbian }) => {
   const [scores, setScores] = useState<PlayerScoreData[]>(() =>
     gameState.players.map((p) => ({
@@ -294,16 +325,13 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
               : 'Sum up all printed star victory points from village tiles (e.g. Forge 7, Goldsmith 7, Sawmill 7, Sculptor 7, Well adjacent, Home 2 VP...).'}
           </p>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             <label className="text-xs font-bold text-stone-700">
               {isSerbian ? 'Ukupno odštampanih poena sa tajlova:' : 'Total printed VP from tiles:'}
             </label>
-            <input
-              type="number"
-              min="0"
+            <TouchStepper
               value={activePlayer.printedVp}
-              onChange={(e) => updatePlayer(activePlayer.id, 'printedVp', parseInt(e.target.value) || 0)}
-              className="w-24 text-center font-mono font-bold text-sm p-2 rounded-xl border border-stone-300 bg-stone-50"
+              onChange={(val) => updatePlayer(activePlayer.id, 'printedVp', val)}
             />
           </div>
         </div>
@@ -336,14 +364,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
                   <span>{isSerbian ? 'Nadograđen (2x)' : 'Upgraded (2x)'}</span>
                 </label>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-stone-500">{isSerbian ? 'Resursa na ambaru:' : 'Resources:'}</span>
-                <input
-                  type="number"
-                  min="0"
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-stone-500">{isSerbian ? 'Resursa:' : 'Resources:'}</span>
+                <TouchStepper
                   value={activePlayer.barnWood + activePlayer.barnStone + activePlayer.barnIron + activePlayer.barnGold}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'barnWood', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'barnWood', val)}
                 />
               </div>
             </div>
@@ -362,14 +387,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
                   <span>{isSerbian ? 'Nadograđen' : 'Upgraded'}</span>
                 </label>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-stone-500">{isSerbian ? 'Gvožđa na tajlu:' : 'Iron count:'}</span>
-                <input
-                  type="number"
-                  min="0"
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-stone-500">{isSerbian ? 'Gvožđa:' : 'Iron count:'}</span>
+                <TouchStepper
                   value={activePlayer.blacksmithIron}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'blacksmithIron', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'blacksmithIron', val)}
                 />
               </div>
             </div>
@@ -388,14 +410,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
                   <span>{isSerbian ? 'Nadograđen' : 'Upgraded'}</span>
                 </label>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-stone-500">{isSerbian ? 'Kamena na tajlu:' : 'Stone count:'}</span>
-                <input
-                  type="number"
-                  min="0"
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-stone-500">{isSerbian ? 'Kamena:' : 'Stone count:'}</span>
+                <TouchStepper
                   value={activePlayer.stoneYardStone}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'stoneYardStone', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'stoneYardStone', val)}
                 />
               </div>
             </div>
@@ -414,14 +433,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
                   <span>{isSerbian ? 'Nadograđen' : 'Upgraded'}</span>
                 </label>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-stone-500">{isSerbian ? 'Drva na tajlu:' : 'Wood count:'}</span>
-                <input
-                  type="number"
-                  min="0"
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-stone-500">{isSerbian ? 'Drva:' : 'Wood count:'}</span>
+                <TouchStepper
                   value={activePlayer.timberYardWood}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'timberYardWood', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'timberYardWood', val)}
                 />
               </div>
             </div>
@@ -450,21 +466,18 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
                 type="checkbox"
                 checked={activePlayer.keythedral}
                 onChange={(e) => updatePlayer(activePlayer.id, 'keythedral', e.target.checked)}
-                className="w-5 h-5 rounded text-blue-600"
+                className="w-5 h-5 rounded text-blue-600 cursor-pointer"
               />
             </div>
 
             {/* Key Market */}
             <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1">
               <span className="font-bold block text-stone-900">Key Market (2 VP po zelenom radniku)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Zelenih radnika:' : 'Green meeples:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.keyMarketGreenMeeples}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'keyMarketGreenMeeples', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'keyMarketGreenMeeples', val)}
                 />
               </div>
             </div>
@@ -472,14 +485,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Mercer's Guild */}
             <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1">
               <span className="font-bold block text-stone-900">Mercer\'s Guild (5 VP po setu 3 resursa)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Setova (D+K+G):' : 'Sets (W+S+I):'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.mercerResourceSets}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'mercerResourceSets', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'mercerResourceSets', val)}
                 />
               </div>
             </div>
@@ -487,14 +497,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Scholar */}
             <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1">
               <span className="font-bold block text-stone-900">Scholar (3 VP po izabranoj veštini)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Veština izabranog tipa:' : 'Chosen skills:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.scholarChosenSkills}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'scholarChosenSkills', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'scholarChosenSkills', val)}
                 />
               </div>
             </div>
@@ -502,14 +509,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Scribes */}
             <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1">
               <span className="font-bold block text-stone-900">Scribes (10 VP po setu 3 različite veštine)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Setova sve 3 veštine:' : 'Full 3-skill sets:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.scribesSkillSets}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'scribesSkillSets', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'scribesSkillSets', val)}
                 />
               </div>
             </div>
@@ -517,14 +521,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Village Hall */}
             <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1">
               <span className="font-bold block text-stone-900">Village Hall (1 VP po radniku izabrane boje)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Radnika te boje:' : 'Meeples of colour:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.villageHallChosenMeeples}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'villageHallChosenMeeples', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'villageHallChosenMeeples', val)}
                 />
               </div>
             </div>
@@ -532,14 +533,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Watermill */}
             <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1">
               <span className="font-bold block text-stone-900">Watermill (1 VP po izabranom resursu)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Resursa tog tipa:' : 'Resources count:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.watermillChosenResources}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'watermillChosenResources', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'watermillChosenResources', val)}
                 />
               </div>
             </div>
@@ -547,14 +545,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Windmill */}
             <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1">
               <span className="font-bold block text-stone-900">Windmill (5 VP za svakih 5 resursa)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Setova od 5 resursa:' : 'Sets of 5 res:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.windmillAnyResourceSets5}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'windmillAnyResourceSets5', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'windmillAnyResourceSets5', val)}
                 />
               </div>
             </div>
@@ -562,14 +557,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Apothecary */}
             <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1">
               <span className="font-bold block text-stone-900">Apothecary (3 VP za svakih 5 radnika)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Setova od 5 radnika:' : 'Sets of 5 meeples:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.apothecaryMeeplesSets5}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'apothecaryMeeplesSets5', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'apothecaryMeeplesSets5', val)}
                 />
               </div>
             </div>
@@ -577,14 +569,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Craftsman's Guild */}
             <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1">
               <span className="font-bold block text-stone-900">Craftsman\'s Guild (3 VP po setu P+C+Ž)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Setova (Plavi+Crveni+Žuti):' : 'B+R+Y Sets:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.craftsmanMeepleSets3}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'craftsmanMeepleSets3', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'craftsmanMeepleSets3', val)}
                 />
               </div>
             </div>
@@ -592,14 +581,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Jeweller */}
             <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1">
               <span className="font-bold block text-stone-900">Jeweller (2 VP po zlatu)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Komada zlata:' : 'Gold count:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.jewellerGold}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'jewellerGold', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'jewellerGold', val)}
                 />
               </div>
             </div>
@@ -607,14 +593,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Key Guild */}
             <div className="bg-white p-3 rounded-xl border border-blue-200 space-y-1">
               <span className="font-bold block text-stone-900">Key Guild (10 VP za svakih 5 veština)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Setova od 5 veština:' : 'Sets of 5 skills:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.keyGuildSkillsSets5}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'keyGuildSkillsSets5', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'keyGuildSkillsSets5', val)}
                 />
               </div>
             </div>
@@ -631,14 +614,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Keyflower Boat */}
             <div className="bg-white p-3 rounded-xl border border-cyan-200 space-y-2">
               <span className="font-bold block text-stone-900">Keyflower Brod (Transportni kapacitet)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Ukupan transport:' : 'Transport capacity:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.keyflowerTransportCapacity}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'keyflowerTransportCapacity', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'keyflowerTransportCapacity', val)}
                 />
               </div>
               <label className="flex items-center gap-1.5 text-[11px] text-amber-900 cursor-pointer pt-1 border-t border-stone-100">
@@ -655,14 +635,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Sea Bastion */}
             <div className="bg-white p-3 rounded-xl border border-cyan-200 space-y-1">
               <span className="font-bold block text-stone-900">Sea Bastion (1 VP po tajlu u putnoj petlji)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Tajlova u petlji:' : 'Tiles in loop:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.seaBastionLoopTiles}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'seaBastionLoopTiles', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'seaBastionLoopTiles', val)}
                 />
               </div>
             </div>
@@ -670,14 +647,11 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* Sea Breese */}
             <div className="bg-white p-3 rounded-xl border border-cyan-200 space-y-1">
               <span className="font-bold block text-stone-900">Sea Breese (Brodovi spojeni rekom)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Poeni sa brodova:' : 'Boat river points:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.seaBreeseBoatPoints}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'seaBreeseBoatPoints', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'seaBreeseBoatPoints', val)}
                 />
               </div>
             </div>
@@ -690,7 +664,7 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
                   type="checkbox"
                   checked={activePlayer.hasFlipperBoat}
                   onChange={(e) => updatePlayer(activePlayer.id, 'hasFlipperBoat', e.target.checked)}
-                  className="rounded text-cyan-600"
+                  className="rounded text-cyan-600 cursor-pointer"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -699,7 +673,7 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
                   type="checkbox"
                   checked={activePlayer.hasIanvincibleBoat}
                   onChange={(e) => updatePlayer(activePlayer.id, 'hasIanvincibleBoat', e.target.checked)}
-                  className="rounded text-cyan-600"
+                  className="rounded text-cyan-600 cursor-pointer"
                 />
               </div>
             </div>
@@ -707,38 +681,29 @@ export const ScoreCalculator: React.FC<ScoreCalculatorProps> = ({ gameState, isS
             {/* White Wind */}
             <div className="bg-white p-3 rounded-xl border border-cyan-200 space-y-1">
               <span className="font-bold block text-stone-900">White Wind (1 VP po preostalom radniku)</span>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-500">{isSerbian ? 'Radnika:' : 'Workers:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.whiteWindUnusedWorkers}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'whiteWindUnusedWorkers', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'whiteWindUnusedWorkers', val)}
                 />
               </div>
             </div>
 
             {/* Turn Order Connected Roads & Gold */}
             <div className="bg-white p-3 rounded-xl border border-cyan-200 space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <span className="text-stone-700 font-bold">{isSerbian ? 'Puteva na redosledima (1 VP):' : 'Turn order roads:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.turnOrderConnectedRoads}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'turnOrderConnectedRoads', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'turnOrderConnectedRoads', val)}
                 />
               </div>
-              <div className="flex items-center justify-between pt-1 border-t border-stone-100">
+              <div className="flex items-center justify-between gap-1 pt-1 border-t border-stone-100">
                 <span className="text-stone-700 font-bold">{isSerbian ? 'Preostalo zlato (1 VP):' : 'Unallocated Gold:'}</span>
-                <input
-                  type="number"
-                  min="0"
+                <TouchStepper
                   value={activePlayer.unusedGold}
-                  onChange={(e) => updatePlayer(activePlayer.id, 'unusedGold', parseInt(e.target.value) || 0)}
-                  className="w-16 text-center font-mono font-bold p-1 rounded-lg border border-stone-300"
+                  onChange={(val) => updatePlayer(activePlayer.id, 'unusedGold', val)}
                 />
               </div>
             </div>
